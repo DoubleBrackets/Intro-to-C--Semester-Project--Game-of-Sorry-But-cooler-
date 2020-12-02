@@ -12,6 +12,7 @@ int main()
 
     GameWindow gameWindow(width, height);
 
+    //Main game loop
     while (gameWindow.window.isOpen())
     {
 
