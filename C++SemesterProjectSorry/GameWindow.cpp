@@ -1,17 +1,18 @@
-#include "GameWindow.h"
+
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <iostream>
+#include "GameWindow.h"
+#include "GameObject.h"
 
 
-
-GameWindow::GameWindow(int width, int height)
+GameWindow::GameWindow(int _width, int _height)
 {
 	//Scales resolution
-	width *= RES_SCALE;
-	height *= RES_SCALE;
-	this->width = width;
-	this->height = height;
+	_width *= RES_SCALE;
+	_height *= RES_SCALE;
+	width = _width;
+	height = _height;
 	//Creates sfml window
 	window.create(sf::VideoMode(width, height), "Sorry! ^_^");
 	window.setKeyRepeatEnabled(false);
@@ -36,7 +37,10 @@ void GameWindow::PollEvents()
 			}
 			case sf::Event::MouseButtonReleased:
 			{
-				std::cout << "eat lead" << std::endl;
+				GameObject *g = GameObject::FindObject("game_board");
+				sf::Vector2f pos = (*g).position;
+				pos.x += 5;
+				(*g).SetPosition(pos);
 			}
 		}
 	}
@@ -49,18 +53,15 @@ void GameWindow::DrawSprite(sf::Sprite sprite)
 	window.draw(sprite);
 }
 
+
 void GameWindow::Render()
 {
-	window.clear();
-	/*std::list<ObjectSprite>::iterator it;
+	window.clear(sf::Color::White);
+	std::vector<GameObject>::iterator it;
 	int c = 0;
-	for (it = ObjectSprite::spriteList.begin(); it != ObjectSprite::spriteList.end(); it++)
+	for (it = GameObject::spriteList.begin(); it != GameObject::spriteList.end(); it++)
 	{
-		window.draw(it->sprite);
-	}*/
-	sf::RectangleShape testShape(sf::Vector2f(20, 20));
-	testShape.setPosition(sf::Vector2f(width / 2, height / 2));
-	testShape.setFillColor(sf::Color::White);
-	window.draw(testShape);
+		window.draw(it->currentSprite);
+	}
 	window.display();
 }
