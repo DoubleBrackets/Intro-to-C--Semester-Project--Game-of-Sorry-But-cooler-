@@ -14,7 +14,7 @@ GameWindow::GameWindow(int _width, int _height)
 	width = _width;
 	height = _height;
 	//Creates sfml window
-	window.create(sf::VideoMode(width, height), "Sorry! ^_^");
+	window.create(sf::VideoMode(width, height), "Sorry! ^_^",sf::Style::Close);
 	window.setKeyRepeatEnabled(false);
 	window.setVerticalSyncEnabled(true);
 }
@@ -38,9 +38,9 @@ void GameWindow::PollEvents()
 			case sf::Event::MouseButtonReleased:
 			{
 				GameObject *g = GameObject::FindObject("game_board");
-				sf::Vector2f pos = (*g).position;
-				pos.x += 5;
-				(*g).SetPosition(pos);
+				sf::IntRect rect = (*g).currentSprite.getTextureRect();
+				rect.left += 10;
+				(*g).currentSprite.setTextureRect(rect);
 			}
 		}
 	}

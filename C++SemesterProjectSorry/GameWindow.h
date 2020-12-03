@@ -3,7 +3,7 @@
 #include <SFML/Graphics.hpp>
 
 
-#define RES_SCALE 1;
+#define RES_SCALE 3;
 
 class GameWindow
 {
