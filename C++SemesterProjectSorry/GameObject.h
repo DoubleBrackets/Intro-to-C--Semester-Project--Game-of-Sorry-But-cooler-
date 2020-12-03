@@ -1,6 +1,8 @@
 #pragma once
 #include<vector>
+#include<chrono>
 #include <SFML/Graphics.hpp>
+
 struct Animation 
 {
 	//Stores frames as IntRect, for manipulation using sprite.TextureRect
@@ -8,7 +10,7 @@ struct Animation
 	int frameCount;
 	double frameInterval;
 	std::string name;
-	double startTime;
+	std::chrono::high_resolution_clock::time_point startTime;
 };
 
 class GameObject
@@ -29,8 +31,11 @@ public:
 	void SetTexture(std::string,int);
 	static GameObject *FindObject(std::string);
 	void AddAnimation(std::string, int,double,sf::Vector2f,int,int,sf::Vector2f);
-	void SetSpriteToFirstFrameOfAnimation(std::string);
+	void SetAnimationFrame(int);
 	void StartAnimation(std::string);
 	void StopAnimation();
+	void UpdateGameObject(long);
+	void FlipSprite();
+	static long ConvertToMilli(std::chrono::high_resolution_clock::time_point);
 };
 

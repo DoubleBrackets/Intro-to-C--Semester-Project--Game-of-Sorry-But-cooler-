@@ -5,6 +5,8 @@
 #include "GameWindow.h"
 
 #include <iostream>
+#include <thread>
+
 #include "ResourceManager.h"
 
 std::vector<GameObject> GameObject::spriteList;
@@ -98,16 +100,9 @@ void GameObject::AddAnimation(std::string name,int framecount, double interval, 
 }
 
 
-void GameObject::SetSpriteToFirstFrameOfAnimation(std::string name)
+void GameObject::SetAnimationFrame(int index)
 {
-	int l = animationList.size();
-	for (int x = 0; x < l; x++)
-	{
-		if (animationList[x].name == name)
-		{
-			currentSprite.setTextureRect(animationList[x].frames[0]);
-		}
-	}
+	currentSprite.setTextureRect(animationList[currentAnimationIndex].frames[index]);
 }
 
 void GameObject::StartAnimation(std::string name)
@@ -118,6 +113,7 @@ void GameObject::StartAnimation(std::string name)
 		if (animationList[x].name == name)
 		{
 			currentAnimationIndex = x;
+			animationList[x].startTime = std::chrono::high_resolution_clock::now();
 		}
 	}
 }
@@ -125,6 +121,33 @@ void GameObject::StartAnimation(std::string name)
 void GameObject::StopAnimation()
 {
 	currentAnimationIndex = -1;
+}
+
+void GameObject::UpdateGameObject(long start_time)
+{
+	if (currentAnimationIndex != -1)
+	{
+		//time in milli
+		double diff  = ((double)start_time - ConvertToMilli(animationList[currentAnimationIndex].startTime))/1000;
+		//finds index of frame
+		Animation canim = animationList[currentAnimationIndex];
+		int index = (int)(diff / canim.frameInterval) % canim.frameCount;
+		SetAnimationFrame(index);
+	}
+
+}
+
+long GameObject::ConvertToMilli(std::chrono::high_resolution_clock::time_point point)
+{
+	auto duration = std::chrono::time_point_cast<std::chrono::milliseconds>(point).time_since_epoch();
+	return duration.count();
+}
+
+void GameObject::FlipSprite()
+{
+	sf::Vector2f v = currentSprite.getScale();
+	v.x *= -1;
+	currentSprite.setScale(v);
 }
 
 
