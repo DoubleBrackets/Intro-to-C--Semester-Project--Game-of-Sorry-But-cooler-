@@ -9,15 +9,14 @@
 
 #include "ResourceManager.h"
 
-std::vector<GameObject> GameObject::spriteList;
+std::vector<GameObject*> GameObject::spriteList;
 GameObject::GameObject(std::string name)
 {
 	objectName = name;
-
 }
 
 
-void GameObject::SetTexture(std::string textureTag,int scale)
+void GameObject::SetTexture(std::string textureTag,double scale)
 {
 	std::map<std::string, sf::Texture>::iterator it;
 	it = ResourceManager::textureMap.find(textureTag);
@@ -26,34 +25,40 @@ void GameObject::SetTexture(std::string textureTag,int scale)
 	{
 		currentSprite.setTexture(it->second);
 	}
-	int temp = RES_SCALE;
+	double temp = RES_SCALE;
 	currentSprite.setScale(sf::Vector2f(scale * temp, scale * temp));
 	//currentSprite.setTextureRect(sf::IntRect(0, 100, 50, 50));
 }
 
-void GameObject::InitializeToRenderList()
+void GameObject::InitializeObject()
 {
 	if (isRendering)
 		return;
 	isRendering = true;
-	spriteList.push_back(*this);
+	spriteList.push_back(this);
 }
 
 
-void GameObject::RemoveSpriteFromRender()
+void GameObject::DeleteObject()
 {
 	if (!isRendering)
 		return;
 	isRendering = false;
-	std::vector<GameObject>::iterator it;
+	std::vector<GameObject*>::iterator it;
 	for (it = spriteList.begin(); it != spriteList.end(); it++)
 	{
-		if (&spriteList[it-spriteList.begin()] == this)
+		if (spriteList[it - spriteList.begin()] == this)
 		{
+			delete(spriteList[it - spriteList.begin()]);
 			spriteList.erase(it);
 			return;
 		}
 	}
+}
+
+void GameObject::MoveObject(sf::Vector2f vec)
+{
+	SetPosition(position + vec);
 }
 
 void GameObject::SetPosition(sf::Vector2f pos)
@@ -68,9 +73,9 @@ GameObject *GameObject::FindObject(std::string name)
 	int size = spriteList.size();
 	for (int x = 0; x < size; x++)
 	{
-		if (spriteList[x].objectName == name)
+		if ((*spriteList[x]).objectName == name)
 		{
-			return &(spriteList[x]);
+			return (spriteList[x]);
 		}
 	}
 
@@ -123,7 +128,7 @@ void GameObject::StopAnimation()
 	currentAnimationIndex = -1;
 }
 
-void GameObject::UpdateGameObject(long start_time)
+void GameObject::UpdateGameObject(long start_time, long frame_duration)
 {
 	if (currentAnimationIndex != -1)
 	{
@@ -134,6 +139,8 @@ void GameObject::UpdateGameObject(long start_time)
 		int index = (int)(diff / canim.frameInterval) % canim.frameCount;
 		SetAnimationFrame(index);
 	}
+	//Velocity update
+	MoveObject(sf::Vector2f(velocity.x*(double)frame_duration / 1000.0, velocity.y*(double)frame_duration / 1000.0));
 
 }
 
@@ -148,6 +155,62 @@ void GameObject::FlipSprite()
 	sf::Vector2f v = currentSprite.getScale();
 	v.x *= -1;
 	currentSprite.setScale(v);
+}
+
+bool GameObject::CheckForClick(sf::Vector2f mPos,bool push_down)
+{
+	if (!clickable)
+		return false;
+	//checks bounds
+	if (mPos.x >= position.x && mPos.y >= position.y)
+	{
+		double yscale = currentSprite.getScale().y;
+		double xscale = currentSprite.getScale().x;
+		if (mPos.x <= position.x + currentSprite.getTextureRect().width * xscale && mPos.y <= position.y + currentSprite.getTextureRect().height * yscale)
+		{
+			if (push_down)
+			{
+				OnClick();
+			}
+			else
+			{
+				OnRelease(true);
+			}
+			return true;
+		}
+	}
+	if (!push_down)
+		OnRelease(false);
+	return false;
+}
+//Clickable subclass
+
+Clickable::Clickable(std::string name) : GameObject::GameObject(name) 
+{
+	clickable = true;
+};
+
+void Clickable::OnClick()
+{
+	currentSprite.setColor(sf::Color(150, 150, 150, 255));
+};
+
+void Clickable::OnRelease(bool hover)
+{
+	currentSprite.setColor(sf::Color(255, 255,255, 255));
+};
+
+//Player subclass
+
+PlayerPiece::PlayerPiece(int playernum, std::string name) : Clickable::Clickable(name)
+{
+	if(playernum == 0)
+		SetTexture("redpiece_tex", 1.25);
+	else
+		SetTexture("bluepiece_tex", 1.25);
+	AddAnimation("walk", 4, 0.2, sf::Vector2f(16, 16), 4, 1, sf::Vector2f(0, 0));
+	AddAnimation("idle", 4, 0.35, sf::Vector2f(16, 16), 4, 1, sf::Vector2f(0, 16));
+	StartAnimation("idle");
 }
 
 

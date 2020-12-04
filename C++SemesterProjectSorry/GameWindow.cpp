@@ -9,8 +9,8 @@
 GameWindow::GameWindow(int _width, int _height)
 {
 	//Scales resolution
-	_width *= RES_SCALE;
-	_height *= RES_SCALE;
+	_width *= (double)RES_SCALE;
+	_height *= (double)RES_SCALE;
 	width = _width;
 	height = _height;
 	//Creates sfml window
@@ -37,10 +37,25 @@ void GameWindow::PollEvents()
 			}
 			case sf::Event::MouseButtonReleased:
 			{
-				GameObject *g = GameObject::FindObject("game_board");
-				sf::IntRect rect = (*g).currentSprite.getTextureRect();
-				rect.left += 10;
-				(*g).currentSprite.setTextureRect(rect);
+				int l = GameObject::spriteList.size();
+				sf::Vector2i mPos = sf::Mouse::getPosition(window);
+				for (int x = l - 1; x >= 0; x--)
+				{
+					if ((*GameObject::spriteList[x]).CheckForClick(sf::Vector2f(mPos.x, mPos.y), false))
+						break;
+				}
+				break;
+			}
+			case sf::Event::MouseButtonPressed:
+			{
+				int l = GameObject::spriteList.size();
+				sf::Vector2i mPos = sf::Mouse::getPosition(window);
+				for (int x = l - 1; x >= 0; x--)
+				{
+					if ((*GameObject::spriteList[x]).CheckForClick(sf::Vector2f(mPos.x, mPos.y), true))
+						break;
+				}
+				break;
 			}
 		}
 	}
@@ -57,11 +72,11 @@ void GameWindow::DrawSprite(sf::Sprite sprite)
 void GameWindow::Render()
 {
 	window.clear(sf::Color::White);
-	std::vector<GameObject>::iterator it;
+	std::vector<GameObject*>::iterator it;
 	int c = 0;
 	for (it = GameObject::spriteList.begin(); it != GameObject::spriteList.end(); it++)
 	{
-		window.draw(it->currentSprite);
+		window.draw((*GameObject::spriteList[it - GameObject::spriteList.begin()]).currentSprite);
 	}
 	window.display();
 }
