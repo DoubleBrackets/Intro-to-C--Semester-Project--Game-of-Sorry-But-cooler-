@@ -8,6 +8,7 @@ ResourceManager::ResourceManager(std::string k)
 {
 	AddTexture("board_tex", "Assets/board.png");
 	AddTexture("redpiece_tex", "Assets/RedPiece.png");
+	AddTexture("bluepiece_tex", "Assets/BluePiece.png");
 }
 
 void ResourceManager::AddTexture(std::string key, std::string filepath)

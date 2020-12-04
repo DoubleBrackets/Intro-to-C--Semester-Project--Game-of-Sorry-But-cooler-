@@ -18,10 +18,10 @@ int main()
     board.SetTexture("board_tex",1);
     board.InitializeObject();
 
-    PlayerPiece* testplayer = new PlayerPiece(0,"testplayer");
-    (*testplayer).SetPosition(sf::Vector2f(65 * 2.5, 159 * 2.5));
+    PlayerPiece* testplayer = new PlayerPiece(1,"testplayer");
+    testplayer->SetPosition(sf::Vector2f(65 * 2.5, 159 * 2.5));
     //testplayer.velocity = sf::Vector2f(40,0);
-    (*testplayer).InitializeObject();
+    testplayer->InitializeObject();
     //Main game loop
     long prevStartTime = GameObject::ConvertToMilli(std::chrono::high_resolution_clock::now());
     while (gameWindow.window.isOpen())
@@ -40,8 +40,8 @@ int main()
         gameWindow.Render();
         //saves time to calculate frame length
         prevStartTime = updateStartTime;
-        std::this_thread::sleep_for(std::chrono::milliseconds((long)(1 / tick_rate * 1000)));
+        //std::this_thread::sleep_for(std::chrono::milliseconds((long)(1 / tick_rate * 1000)));
     }
-
     return 0;
 }
+

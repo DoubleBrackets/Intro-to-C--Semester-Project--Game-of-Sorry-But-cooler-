@@ -205,12 +205,13 @@ void Clickable::OnRelease(bool hover)
 PlayerPiece::PlayerPiece(int playernum, std::string name) : Clickable::Clickable(name)
 {
 	if(playernum == 0)
-		SetTexture("redpiece_tex", 1.25);
+		SetTexture("redpiece_tex", 1.2);
 	else
-		SetTexture("bluepiece_tex", 1.25);
+		SetTexture("bluepiece_tex", 1.2);
 	AddAnimation("walk", 4, 0.2, sf::Vector2f(16, 16), 4, 1, sf::Vector2f(0, 0));
 	AddAnimation("idle", 4, 0.35, sf::Vector2f(16, 16), 4, 1, sf::Vector2f(0, 16));
-	StartAnimation("idle");
+	AddAnimation("die", 4, 0.2, sf::Vector2f(16, 16), 4, 1, sf::Vector2f(0, 32));
+	StartAnimation("walk");
 }
 
 
