@@ -72,11 +72,13 @@ void GameWindow::DrawSprite(sf::Sprite sprite)
 void GameWindow::Render()
 {
 	window.clear(sf::Color::White);
-	std::vector<GameObject*>::iterator it;
+	std::vector<std::shared_ptr<GameObject>>::iterator it;
 	int c = 0;
 	for (it = GameObject::spriteList.begin(); it != GameObject::spriteList.end(); it++)
 	{
-		window.draw((*GameObject::spriteList[it - GameObject::spriteList.begin()]).currentSprite);
+		std::shared_ptr<GameObject> g = GameObject::spriteList[it - GameObject::spriteList.begin()];
+		if(g->isRendering)
+			window.draw(g->currentSprite);
 	}
 	window.display();
 }

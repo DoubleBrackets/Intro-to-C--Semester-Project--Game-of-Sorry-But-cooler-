@@ -3,7 +3,7 @@
 #include<chrono>
 #include<iostream>
 #include <SFML/Graphics.hpp>
-
+class piece;
 struct Animation 
 {
 	//Stores frames as IntRect, for manipulation using sprite.TextureRect
@@ -21,7 +21,7 @@ public:
 	sf::Vector2f velocity;
 
 	std::string objectName;
-	static std::vector<GameObject*> spriteList;
+	static std::vector<std::shared_ptr<GameObject>> spriteList;
 	std::vector<Animation> animationList;
 	sf::Sprite currentSprite;
 
@@ -32,10 +32,10 @@ public:
 	GameObject(std::string);
 	void SetPosition(sf::Vector2f);
 	void MoveObject(sf::Vector2f);
-	void InitializeObject();
+	void InitializeObject(std::shared_ptr<GameObject>);
 	void DeleteObject();
 	void SetTexture(std::string,double);
-	static GameObject *FindObject(std::string);
+	static std::shared_ptr<GameObject> FindObject(std::string);
 	void AddAnimation(std::string, int,double,sf::Vector2f,int,int,sf::Vector2f);
 	void SetAnimationFrame(int);
 	void StartAnimation(std::string);
@@ -55,9 +55,12 @@ public:
 	void OnClick() override;
 	void OnRelease(bool hover) override;
 };
-
-class PlayerPiece : public Clickable {
+ 
+class PlayerPiece : public Clickable { 
 public:
-	PlayerPiece(int, std::string);
+	piece* gamePiece;
+	PlayerPiece(int, std::string,piece*);
+	void UpdatePosition(int);
+	void OnClick() override;
 };
 

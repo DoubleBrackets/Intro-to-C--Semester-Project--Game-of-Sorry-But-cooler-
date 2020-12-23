@@ -4,6 +4,7 @@
 #include "GameWindow.h"
 #include "ResourceManager.h"
 #include "GameObject.h"
+#include "GameManager.h"
 
 #define TICK_RATE 50;
 int main()
@@ -12,20 +13,25 @@ int main()
     int height = 250;
     const double tick_rate = TICK_RATE;
 
+    //Creates window + resource manager objects
     GameWindow gameWindow(width, height);
     ResourceManager resourceManager("e");
-    GameObject board("game_board");
-    board.SetTexture("board_tex",1);
-    board.InitializeObject();
+    //Creates board graphic
+    std::shared_ptr<GameObject> board = std::make_shared<GameObject>("game_board");
+    board->SetTexture("board_tex",1);
+    board->InitializeObject(board);
+    board.reset();
+    //Creates game manager object and initializes it
+    GameManager gameManager;
+    gameManager.InitGame();
 
-    PlayerPiece* testplayer = new PlayerPiece(1,"testplayer");
-    testplayer->SetPosition(sf::Vector2f(65 * 2.5, 159 * 2.5));
-    //testplayer.velocity = sf::Vector2f(40,0);
-    testplayer->InitializeObject();
-    //Main game loop
+    //Saves initial start time of loop
     long prevStartTime = GameObject::ConvertToMilli(std::chrono::high_resolution_clock::now());
+    //Game loop started
     while (gameWindow.window.isOpen())
     {       
+        //Game manager update
+        
         //Gets current time
         long updateStartTime = GameObject::ConvertToMilli(std::chrono::high_resolution_clock::now());
         gameWindow.PollEvents();
@@ -34,14 +40,16 @@ int main()
         int l = GameObject::spriteList.size();
         for (int x = 0; x < l; x++)
         {
-            GameObject* g = GameObject::spriteList[x];
+            std::shared_ptr<GameObject> g = GameObject::spriteList[x];
             g->UpdateGameObject(updateStartTime,updateStartTime - prevStartTime);
         }
         gameWindow.Render();
         //saves time to calculate frame length
         prevStartTime = updateStartTime;
-        //std::this_thread::sleep_for(std::chrono::milliseconds((long)(1 / tick_rate * 1000)));
+        std::this_thread::sleep_for(std::chrono::milliseconds((long)(1 / tick_rate * 1000)));
     }
     return 0;
 }
+
+
 

@@ -8,8 +8,8 @@
 #include <thread>
 
 #include "ResourceManager.h"
-
-std::vector<GameObject*> GameObject::spriteList;
+#include "piece.h";
+std::vector<std::shared_ptr<GameObject>> GameObject::spriteList;
 GameObject::GameObject(std::string name)
 {
 	objectName = name;
@@ -19,6 +19,7 @@ GameObject::GameObject(std::string name)
 void GameObject::SetTexture(std::string textureTag,double scale)
 {
 	std::map<std::string, sf::Texture>::iterator it;
+	//gets texture from resourcemanager map using name, sets current sprite to texture
 	it = ResourceManager::textureMap.find(textureTag);
 
 	if (it != ResourceManager::textureMap.end())
@@ -30,12 +31,12 @@ void GameObject::SetTexture(std::string textureTag,double scale)
 	//currentSprite.setTextureRect(sf::IntRect(0, 100, 50, 50));
 }
 
-void GameObject::InitializeObject()
+void GameObject::InitializeObject(std::shared_ptr<GameObject> ptr)
 {
 	if (isRendering)
 		return;
 	isRendering = true;
-	spriteList.push_back(this);
+	spriteList.push_back(ptr);
 }
 
 
@@ -44,12 +45,13 @@ void GameObject::DeleteObject()
 	if (!isRendering)
 		return;
 	isRendering = false;
-	std::vector<GameObject*>::iterator it;
+	std::vector<std::shared_ptr<GameObject>>::iterator it;
+	std::shared_ptr<GameObject> thisptr(this);
 	for (it = spriteList.begin(); it != spriteList.end(); it++)
 	{
-		if (spriteList[it - spriteList.begin()] == this)
+		if (spriteList[it - spriteList.begin()] == thisptr)
 		{
-			delete(spriteList[it - spriteList.begin()]);
+			//delete(spriteList[it - spriteList.begin()]);
 			spriteList.erase(it);
 			return;
 		}
@@ -67,8 +69,8 @@ void GameObject::SetPosition(sf::Vector2f pos)
 	currentSprite.setPosition(pos);
 }
 
-
-GameObject *GameObject::FindObject(std::string name)
+//Finds object in object list using name
+std::shared_ptr<GameObject> GameObject::FindObject(std::string name)
 {
 	int size = spriteList.size();
 	for (int x = 0; x < size; x++)
@@ -104,12 +106,13 @@ void GameObject::AddAnimation(std::string name,int framecount, double interval, 
 	animationList.push_back(anim);
 }
 
-
+//Sets current object sprite to certain frame in current animation
 void GameObject::SetAnimationFrame(int index)
 {
 	currentSprite.setTextureRect(animationList[currentAnimationIndex].frames[index]);
 }
 
+//Starts playing animation based on name
 void GameObject::StartAnimation(std::string name)
 {
 	int l = animationList.size();
@@ -123,13 +126,16 @@ void GameObject::StartAnimation(std::string name)
 	}
 }
 
+//Stops playing current animation
 void GameObject::StopAnimation()
 {
 	currentAnimationIndex = -1;
 }
 
+//Update gameobject per tick
 void GameObject::UpdateGameObject(long start_time, long frame_duration)
 {
+	//Updates animation that is currently playing
 	if (currentAnimationIndex != -1)
 	{
 		//time in milli
@@ -139,6 +145,7 @@ void GameObject::UpdateGameObject(long start_time, long frame_duration)
 		int index = (int)(diff / canim.frameInterval) % canim.frameCount;
 		SetAnimationFrame(index);
 	}
+	//Physics updates
 	//Velocity update
 	MoveObject(sf::Vector2f(velocity.x*(double)frame_duration / 1000.0, velocity.y*(double)frame_duration / 1000.0));
 
@@ -156,7 +163,7 @@ void GameObject::FlipSprite()
 	v.x *= -1;
 	currentSprite.setScale(v);
 }
-
+//Checks if 
 bool GameObject::CheckForClick(sf::Vector2f mPos,bool push_down)
 {
 	if (!clickable)
@@ -179,6 +186,7 @@ bool GameObject::CheckForClick(sf::Vector2f mPos,bool push_down)
 			return true;
 		}
 	}
+	//If mouse is released without being over the object, still release
 	if (!push_down)
 		OnRelease(false);
 	return false;
@@ -195,16 +203,16 @@ void Clickable::OnClick()
 	currentSprite.setColor(sf::Color(150, 150, 150, 255));
 };
 
-void Clickable::OnRelease(bool hover)
+void Clickable::OnRelease(bool isHovering)
 {
 	currentSprite.setColor(sf::Color(255, 255,255, 255));
 };
 
 //Player subclass
 
-PlayerPiece::PlayerPiece(int playernum, std::string name) : Clickable::Clickable(name)
+PlayerPiece::PlayerPiece(int teamnum, std::string name,piece* gamePiece) : Clickable::Clickable(name)
 {
-	if(playernum == 0)
+	if(teamnum == 0)
 		SetTexture("redpiece_tex", 1.2);
 	else
 		SetTexture("bluepiece_tex", 1.2);
@@ -212,6 +220,35 @@ PlayerPiece::PlayerPiece(int playernum, std::string name) : Clickable::Clickable
 	AddAnimation("idle", 4, 0.35, sf::Vector2f(16, 16), 4, 1, sf::Vector2f(0, 16));
 	AddAnimation("die", 4, 0.2, sf::Vector2f(16, 16), 4, 1, sf::Vector2f(0, 32));
 	StartAnimation("walk");
+	this->gamePiece = gamePiece;
+}
+
+void PlayerPiece::UpdatePosition(int boardPos)//updates position of graphic object based on source piece
+{
+	double scale = RES_SCALE;
+	if (boardPos > 7 && boardPos < 13)//on red ladder
+	{
+		SetPosition(sf::Vector2f(7 * 16 * scale, 159 * scale + scale* 16 * (boardPos-7)));
+	}
+	else if (boardPos > 27 && boardPos < 33)//on blue ladder
+	{
+		SetPosition(sf::Vector2f(7 * 16 * scale, 159 * scale + scale * 16 * (boardPos - 27)));
+	}
+	else if(boardPos != -1)//normal square
+	{
+		int offset = 0;
+		if (boardPos >= 13)
+			offset = 5;
+		if (boardPos >= 33)
+			offset = 10;
+		SetPosition(sf::Vector2f((boardPos - offset) * 16 * scale, 159*scale));
+	}
+}
+
+void PlayerPiece::OnClick()
+{
+	Clickable::OnClick();
+	std::cout << gamePiece->team;
 }
 
 
