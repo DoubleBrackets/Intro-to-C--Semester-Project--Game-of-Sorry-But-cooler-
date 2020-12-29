@@ -5,6 +5,7 @@ public:
     int pos;
     int team;
     int piecenumber;
+    bool hasValidMoves;
 
     std::shared_ptr<PlayerPiece> pieceObject;
 
@@ -20,6 +21,8 @@ public:
     void UpdatePosition() {
         if (pos != -1)
             pieceObject->isRendering = true;
+        else
+            pieceObject->isRendering = false;
         pieceObject->UpdatePosition(pos);
     }
 };
