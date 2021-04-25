@@ -1,1 +1,3 @@
-C++_Senior_Semester_Project_Sorry(But cooler)
+A spinoff of "Sorry", made using C++ and SFML library.
+
+My HS Senior year Semester Project for Intro to C++ course.
