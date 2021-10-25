@@ -1,16 +1,1 @@
-*
-!*.gitignore
-!*/C++SemesterProjectSorry/GameWindow.cpp
-!*/C++SemesterProjectSorry/GameWindow.h
-!*/C++SemesterProjectSorry/SorryMain.cpp
-!*/C++SemesterProjectSorry/Assets
-!*/C++SemesterProjectSorry/ResourceManager.cpp
-!*/C++SemesterProjectSorry/GameObject.cpp
-!*/C++SemesterProjectSorry/ResourceManager.h
-!*/C++SemesterProjectSorry/GameObject.h
-!*/C++SemesterProjectSorry/GameManager.h
-!*/C++SemesterProjectSorry/GameManager.cpp
-!*/C++SemesterProjectSorry/piece.h
-!*/C++SemesterProjectSorry/CardManager.h
-!*/C++SemesterProjectSorry/CardManager.cpp
-!*/C++SemesterProjectSorry/TextObject.cpp
+
